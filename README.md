@@ -39,7 +39,7 @@ Supported features:
         --download-resolutions <download-resolutions>
             Download using the first resolution from this list, try next one if failed [default: 4K,3K,2K,1K]
 
-        --download-type <download-type>
+        --download-types <download-type>
             Specifies types of assets to be downloaded [default: PhotoTexturePBR,DecalPBR,AtlasPBR]
 
         --pack-cache-path <pack-cache-path>
