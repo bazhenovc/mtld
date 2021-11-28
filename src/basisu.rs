@@ -70,9 +70,11 @@ fn compress_single_material(
                 if force_basisu || !albedo_target_path.exists() {
                     let has_opacity = material.get("opacity").and_then(|f| f.as_bool()).unwrap_or_default();
                     let albedo_image = load(BufReader::new(File::open(&albedo_source_path)?), ImageFormat::Png)?;
-                    if (has_opacity && (albedo_image.color() != ColorType::Rgba8))
-                        || (albedo_image.color() != ColorType::Rgb8)
-                    {
+                    if has_opacity {
+                        if albedo_image.color() != ColorType::Rgba8 {
+                            return Err(ApplicationError::InvalidImage(albedo_source_path));
+                        }
+                    } else if albedo_image.color() != ColorType::Rgb8 {
                         return Err(ApplicationError::InvalidImage(albedo_source_path));
                     }
 
