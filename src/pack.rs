@@ -221,9 +221,7 @@ fn pack_single_image(
                         .resize_exact(pack_target_width, pack_target_height, FilterType::Lanczos3)
                         .into_luma8();
 
-                    for (target, metalness) in
-                        itertools::izip!(material_pack_image.pixels_mut(), metalness_image.pixels())
-                    {
+                    for (target, metalness) in izip!(material_pack_image.pixels_mut(), metalness_image.pixels()) {
                         target[0] = metalness[0];
                     }
                 }
@@ -243,9 +241,7 @@ fn pack_single_image(
                         .resize_exact(pack_target_width, pack_target_height, FilterType::Lanczos3)
                         .into_luma8();
 
-                    for (target, displacement) in
-                        itertools::izip!(material_pack_image.pixels_mut(), displacement_image.pixels())
-                    {
+                    for (target, displacement) in izip!(material_pack_image.pixels_mut(), displacement_image.pixels()) {
                         target[2] = displacement[0];
                     }
                 }
@@ -255,9 +251,7 @@ fn pack_single_image(
                         .resize_exact(pack_target_width, pack_target_height, FilterType::Lanczos3)
                         .into_luma8();
 
-                    for (target, roughness) in
-                        itertools::izip!(material_pack_image.pixels_mut(), roughness_image.pixels())
-                    {
+                    for (target, roughness) in izip!(material_pack_image.pixels_mut(), roughness_image.pixels()) {
                         target[3] = roughness[0];
                     }
                 }
