@@ -50,11 +50,11 @@ struct CommandLineOptions {
     download_extensions: ArgumentVec,
 
     #[structopt(
-        long = "download-type",
+        long = "download-types",
         help = "Specifies types of assets to be downloaded",
         default_value = "PhotoTexturePBR,DecalPBR,AtlasPBR"
     )]
-    download_type: String,
+    download_types: String,
 
     #[structopt(
         long = "user-agent",
@@ -170,7 +170,7 @@ fn main() -> Result<(), ApplicationError> {
             &command_line.download_cache_path,
             &command_line.download_resolutions.0,
             &command_line.download_extensions.0,
-            &command_line.download_type,
+            &command_line.download_types,
             &command_line.user_agent,
         )?;
     }

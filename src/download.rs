@@ -14,7 +14,7 @@ pub fn download_ambientcg(
     download_cache_path: &std::path::Path,
     download_resolutions: &[String],
     download_extensions: &[String],
-    download_type: &str,
+    download_types_request: &str,
     user_agent: &str,
 ) -> Result<(), ApplicationError> {
     let mut download_types = Vec::with_capacity(download_resolutions.len() * download_extensions.len());
@@ -34,7 +34,7 @@ pub fn download_ambientcg(
         let request = client
             .get(format!(
                 "https://ambientcg.com/api/v2/full_json?type={}&offset={}&sort=Latest&include=downloadData",
-                download_type, request_offset,
+                download_types_request, request_offset,
             ))
             .send()?;
 
