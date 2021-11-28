@@ -1,0 +1,22 @@
+[package]
+name = "mtld"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+itertools = "*"
+structopt = "*"
+image = "*"
+rayon = "*"
+basis-universal = "*"
+serde_json = "*"
+zip = "*"
+
+reqwest = { version = "*", features = ["blocking"] }
+uuid = { version = "*", features = ["v4"] }
+
+[profile.dev.package."basis-universal-sys"]
+opt-level = 3
+
+[profile.dev.package."image"]
+opt-level = 3
