@@ -2,7 +2,7 @@
 Material downloading and packing tool.
 
 Supported features:
-* Downloading material files from (Ambient CG)[https://ambientcg.com/] with specified resolution
+* Downloading material files from [Ambient CG](https://ambientcg.com/) with specified resolution
 * Resinging and packing material properties into different texture channels
 * Compressing material textures with [Basis Universal](https://github.com/BinomialLLC/basis_universal)
 * Generating Unity3D material files with all needed parameters (sRGB for Albedo, Linear for other textures; correct opacity settings, etc)
