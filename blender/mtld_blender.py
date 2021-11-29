@@ -1,3 +1,7 @@
+# Copyright (c) 2021 Kyrylo Bazhenov
+#
+# This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os, bpy, json
 from pathlib import Path
@@ -19,7 +23,6 @@ for material in bpy.data.materials:
     bpy.data.materials.remove(material)
 
 for material_path in Path(MTLD_PACK_CACHE).iterdir():
-    #material_name = os.path.splitext(os.path.basename(material_path))[0]
     if not material_path.is_dir():
         continue
 
