@@ -19,9 +19,6 @@ def create_image_node(material, image_path, srgb, location_y):
     tex_image.interpolation = 'Cubic'
     return tex_image
 
-for material in bpy.data.materials:
-    bpy.data.materials.remove(material)
-
 for material_path in Path(MTLD_PACK_CACHE).iterdir():
     if not material_path.is_dir():
         continue
