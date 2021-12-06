@@ -43,7 +43,10 @@ pub fn pack(
 ) -> Result<(), ApplicationError> {
     create_dir_all(&pack_cache_path)?;
 
-    let directory_contents = read_dir(&download_cache_path)?.filter_map(|f| f.ok()).map(|f| f.path());
+    let directory_contents = read_dir(&download_cache_path)?
+        .filter_map(|f| f.ok())
+        .map(|f| f.path())
+        .filter(|f| f.is_file());
 
     if pack_single_threaded {
         let temp_file_path = pack_cache_path.join("mtldpack.tmp");
@@ -139,31 +142,62 @@ fn pack_single_image(
 
         let material_json_path = target_path.join("Material.json");
         if force_pack || !material_json_path.exists() {
-            write(
-                &material_json_path,
-                &format!(
-                    concat!(
-                        "{{\n",
-                        " \"name\": {:?},\n",
-                        " \"albedo\": {},\n",
-                        " \"opacity\": {},\n",
-                        " \"normal\": {},\n",
-                        " \"metalness\": {},\n",
-                        " \"roughness\": {},\n",
-                        " \"ao\": {},\n",
-                        " \"displacement\": {}\n",
-                        "}}",
+            if let Some(zip_directory) = zip_path.parent() {
+                let download_json_path = zip_directory.join(".mtld").join(zip_name).with_extension("json");
+                let mut material_category = None;
+                let mut material_type = None;
+                let mut material_creation_method = None;
+
+                let download_json: serde_json::Value;
+                if download_json_path.exists() {
+                    download_json = serde_json::from_str(&read_to_string(&download_json_path)?)?;
+
+                    material_category = download_json
+                        .as_object()
+                        .and_then(|f| f.get("category"))
+                        .and_then(|f| f.as_str());
+                    material_type = download_json
+                        .as_object()
+                        .and_then(|f| f.get("type"))
+                        .and_then(|f| f.as_str());
+                    material_creation_method = download_json
+                        .as_object()
+                        .and_then(|f| f.get("method"))
+                        .and_then(|f| f.as_str());
+                }
+
+                write(
+                    &material_json_path,
+                    &format!(
+                        concat!(
+                            "{{\n",
+                            " \"name\": {:?},\n",
+                            " \"category\": {:?},\n",
+                            " \"type\": {:?},\n",
+                            " \"method\": {:?},\n",
+                            " \"albedo\": {},\n",
+                            " \"opacity\": {},\n",
+                            " \"normal\": {},\n",
+                            " \"metalness\": {},\n",
+                            " \"roughness\": {},\n",
+                            " \"ao\": {},\n",
+                            " \"displacement\": {}\n",
+                            "}}",
+                        ),
+                        zip_name,
+                        material_category.unwrap_or("null"),
+                        material_type.unwrap_or("null"),
+                        material_creation_method.unwrap_or("null"),
+                        albedo_image.is_some(),
+                        opacity_image.is_some(),
+                        normal_image.is_some(),
+                        metalness_image.is_some(),
+                        roughness_image.is_some(),
+                        ao_image.is_some(),
+                        displacement_image.is_some(),
                     ),
-                    zip_name,
-                    albedo_image.is_some(),
-                    opacity_image.is_some(),
-                    normal_image.is_some(),
-                    metalness_image.is_some(),
-                    roughness_image.is_some(),
-                    ao_image.is_some(),
-                    displacement_image.is_some(),
-                ),
-            )?;
+                )?;
+            }
         }
 
         let albedo_image_path = target_path.join("Albedo.png");

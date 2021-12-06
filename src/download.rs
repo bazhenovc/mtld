@@ -27,6 +27,9 @@ pub fn download_ambientcg(
     create_dir_all(&download_cache_path)?;
     let temp_file_path = download_cache_path.join("mtldownload.tmp");
 
+    let metadata_path = download_cache_path.join(".mtld");
+    create_dir_all(&metadata_path)?;
+
     let client = Client::builder().user_agent(user_agent).build()?;
 
     let mut request_offset = 0;
@@ -48,10 +51,8 @@ pub fn download_ambientcg(
 
         let found_assets = metadata
             .as_object()
-            .ok_or(ApplicationError::InvalidMetadata)?
-            .get("foundAssets")
-            .ok_or(ApplicationError::InvalidMetadata)?
-            .as_array()
+            .and_then(|f| f.get("foundAssets"))
+            .and_then(|f| f.as_array())
             .ok_or(ApplicationError::InvalidMetadata)?;
 
         if found_assets.is_empty() {
@@ -80,21 +81,41 @@ pub fn download_ambientcg(
                                 })
                         {
                             if let Some(download_link) = download.get("fullDownloadPath").and_then(|f| f.as_str()) {
-                                let zip_name = format!("{}.zip", asset_id);
-                                let zip_path = download_cache_path.join(&zip_name);
+                                let zip_path = download_cache_path.join(asset_id).with_extension("zip");
                                 if force_download || !zip_path.exists() {
                                     match client.get(download_link).send() {
                                         Ok(download_data) => {
                                             println!("GET {}", download_link);
-                                            {
-                                                let mut cursor = Cursor::new(download_data.bytes()?);
-                                                let mut file = BufWriter::new(File::create(&temp_file_path)?);
-                                                copy(&mut cursor, &mut file)?;
-                                            }
+                                            use std::io::Write;
+
+                                            let mut cursor = Cursor::new(download_data.bytes()?);
+                                            let mut file = BufWriter::new(File::create(&temp_file_path)?);
+                                            copy(&mut cursor, &mut file)?;
+                                            file.flush()?;
                                             rename(&temp_file_path, &zip_path)?;
                                         }
                                         Err(e) => println!("ERR {} {:?}", asset_id, e),
                                     }
+                                }
+
+                                let json_path = metadata_path.join(asset_id).with_extension("json");
+                                if !json_path.exists() {
+                                    write(
+                                        &temp_file_path,
+                                        format!(
+                                            concat!(
+                                                "{{\n",
+                                                " \"category\": \"{}\",\n",
+                                                " \"type\": \"{}\",\n",
+                                                " \"method\": \"{}\"\n",
+                                                "}}"
+                                            ),
+                                            asset.get("category").and_then(|f| f.as_str()).unwrap_or("null"),
+                                            asset.get("dataType").and_then(|f| f.as_str()).unwrap_or("null"),
+                                            asset.get("creationMethod").and_then(|f| f.as_str()).unwrap_or("null")
+                                        ),
+                                    )?;
+                                    rename(&temp_file_path, &json_path)?;
                                 }
                             }
                         }

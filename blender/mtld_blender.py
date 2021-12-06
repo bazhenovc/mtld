@@ -3,7 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os, bpy, json
+import os, bpy, json, uuid
 from pathlib import Path
 
 MTLD_PACK_CACHE = '/path/to/.mtld-pack-cache/'
@@ -19,6 +19,10 @@ def create_image_node(material, image_path, srgb, location_y):
     tex_image.interpolation = 'Cubic'
     return tex_image
 
+material_category_ids = None
+if bpy.app.version >= (3, 0, 0):
+    material_category_ids = dict()
+
 for material_path in Path(MTLD_PACK_CACHE).iterdir():
     if not material_path.is_dir():
         continue
@@ -27,14 +31,30 @@ for material_path in Path(MTLD_PACK_CACHE).iterdir():
     with open(material_path.joinpath('Material.json')) as f:
         material_json = json.load(f)
 
+    material_exists = False
     material_name = material_json['name']
     material = None
     try:
         material = bpy.data.materials[material_name]
+        material_exists = True
     except:
         material = bpy.data.materials.new(name = material_name)
         material.use_nodes = True
         material.use_fake_user = True
+
+    if bpy.app.version >= (3, 0, 0):
+        material_category = material_json['category']
+        category_uuid = None
+        try:
+            category_uuid = material_category_ids[material_category]
+        except:
+            category_uuid = str(uuid.uuid4())
+            material_category_ids[material_category] = category_uuid
+        material.asset_mark()
+        material.asset_data.catalog_id = category_uuid
+
+    if material_exists:
+        continue
 
     material.cycles.displacement_method = 'DISPLACEMENT'
     for node in material.node_tree.nodes:
@@ -131,3 +151,13 @@ for material_path in Path(MTLD_PACK_CACHE).iterdir():
 
         if displacement != None:
             material.node_tree.links.new(normal_map.outputs['Normal'], displacement.inputs['Normal'])
+
+    if bpy.app.version >= (3, 0, 0):
+        material.asset_generate_preview()
+
+if bpy.app.version >= (3, 0, 0):
+    with open(bpy.path.abspath('//blender_assets.cats.txt'), 'w') as f:
+        f.write('# MTLD Asset Catalog Definition\n')
+        f.write('VERSION 1\n')
+        for name, uuid in material_category_ids.items():
+            f.write(f'{uuid}:Materials/{name}:{name}\n')

@@ -21,7 +21,10 @@ pub fn compress_basisu(
 ) -> Result<(), ApplicationError> {
     create_dir_all(basisu_cache_path)?;
 
-    let directory_contents = read_dir(&pack_cache_path)?.filter_map(|f| f.ok()).map(|f| f.path());
+    let directory_contents = read_dir(&pack_cache_path)?
+        .filter_map(|f| f.ok())
+        .map(|f| f.path())
+        .filter(|f| f.is_file());
 
     if basisu_single_threaded {
         let temp_file_path = basisu_cache_path.join("mtldbasisu.tmp");
