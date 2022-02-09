@@ -89,6 +89,7 @@ for material_path in Path(MTLD_PACK_CACHE).iterdir():
         if has_opacity:
             material.node_tree.links.new(color_image.outputs['Alpha'], principled_bsdf.inputs['Alpha'])
             material.blend_method = 'CLIP'
+            material.shadow_method = 'CLIP'
             material.use_backface_culling = False
         else:
             material.use_backface_culling = True
