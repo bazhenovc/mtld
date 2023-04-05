@@ -16,6 +16,7 @@ pub fn download_ambientcg(
     download_extensions: &[String],
     download_types_request: &str,
     user_agent: &str,
+    request_limit: u32,
 ) -> Result<(), ApplicationError> {
     let mut download_types = Vec::with_capacity(download_resolutions.len() * download_extensions.len());
     for resolution in download_resolutions {
@@ -36,8 +37,8 @@ pub fn download_ambientcg(
     loop {
         let request = client
             .get(format!(
-                "https://ambientcg.com/api/v2/full_json?type={}&offset={}&sort=Latest&include=downloadData",
-                download_types_request, request_offset,
+                "https://ambientcg.com/api/v2/full_json?type={}&offset={}&sort=Latest&include=downloadData&limit={}",
+                download_types_request, request_offset, request_limit
             ))
             .send()?;
 
@@ -65,7 +66,7 @@ pub fn download_ambientcg(
             if let Some(asset_id) = asset.get("assetId").and_then(|f| f.as_str()) {
                 if let Some(downloads) = asset
                     .get("downloadFolders")
-                    .and_then(|f| f.get("/"))
+                    .and_then(|f| f.get("default"))
                     .and_then(|f| f.get("downloadFiletypeCategories"))
                     .and_then(|f| f.get("zip"))
                     .and_then(|f| f.get("downloads"))

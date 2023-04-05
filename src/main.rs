@@ -52,7 +52,7 @@ struct CommandLineOptions {
     #[structopt(
         long = "download-types",
         help = "Specifies types of assets to be downloaded",
-        default_value = "PhotoTexturePBR,DecalPBR,AtlasPBR"
+        default_value = "Atlas,Material,Decal,PlainTexture"
     )]
     download_types: String,
 
@@ -62,6 +62,13 @@ struct CommandLineOptions {
         default_value = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
     )]
     user_agent: String,
+
+    #[structopt(
+        long = "request-limit",
+        help = "Limits the maximum amount of results per one request",
+        default_value = "100"
+    )]
+    request_limit: u32,
 
     #[structopt(long = "pack", help = "Packs downloaded files")]
     pack: bool,
@@ -172,6 +179,7 @@ fn main() -> Result<(), ApplicationError> {
             &command_line.download_extensions.0,
             &command_line.download_types,
             &command_line.user_agent,
+            command_line.request_limit,
         )?;
     }
 
