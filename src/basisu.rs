@@ -170,7 +170,7 @@ fn compress_single_material(
 fn common_compressor_params() -> CompressorParams {
     let mut compressor_params = CompressorParams::new();
     compressor_params.set_basis_format(BasisTextureFormat::UASTC4x4);
-    compressor_params.set_uastc_quality_level(UastcPackFlags_PackUASTCLevelSlower);
+    compressor_params.set_uastc_quality_level(UastcPackFlags_PackUASTCLevelSlower as _);
     compressor_params.set_rdo_uastc(Some(0.5));
     compressor_params.set_generate_mipmaps(true);
     compressor_params
