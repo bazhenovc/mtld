@@ -41,9 +41,9 @@ pub fn pack(
     pack_target_width: u32,
     pack_target_height: u32,
 ) -> Result<(), ApplicationError> {
-    create_dir_all(&pack_cache_path)?;
+    create_dir_all(pack_cache_path)?;
 
-    let directory_contents = read_dir(&download_cache_path)?
+    let directory_contents = read_dir(download_cache_path)?
         .filter_map(|f| f.ok())
         .map(|f| f.path())
         .filter(|f| f.is_file());
@@ -92,7 +92,7 @@ fn pack_single_image(
     pack_target_width: u32,
     pack_target_height: u32,
 ) -> Result<(), ApplicationError> {
-    if let Some(zip_name) = zip_path.file_stem() {
+    if let Some(zip_name) = zip_path.file_stem().and_then(|p| p.to_str()) {
         println!("PACK {:?}", zip_name);
 
         let mut zip_archive = ZipArchive::new(BufReader::new(File::open(zip_path)?))?;
@@ -168,7 +168,7 @@ fn pack_single_image(
 
                 write(
                     &material_json_path,
-                    &format!(
+                    format!(
                         concat!(
                             "{{\n",
                             " \"name\": {:?},\n",
@@ -200,7 +200,7 @@ fn pack_single_image(
             }
         }
 
-        let albedo_image_path = target_path.join("Albedo.png");
+        let albedo_image_path = target_path.join(format!("{}_A.png", zip_name));
         if force_pack || !albedo_image_path.exists() {
             if let Some(albedo_image) = albedo_image {
                 let albedo_image = decompress_image(&mut zip_archive, albedo_image)?
@@ -229,24 +229,24 @@ fn pack_single_image(
                     albedo_image.save_with_format(&temp_file_path, ImageFormat::Png)?;
                 }
 
-                rename(&temp_file_path, &albedo_image_path)?;
+                rename(temp_file_path, &albedo_image_path)?;
             }
         }
 
-        let normal_image_path = target_path.join("Normal.png");
+        let normal_image_path = target_path.join(format!("{}_N.png", zip_name));
         if force_pack || !normal_image_path.exists() {
             if let Some(normal_image) = normal_image {
                 let normal_image = decompress_image(&mut zip_archive, normal_image)?
                     .resize_exact(pack_target_width, pack_target_height, FilterType::Lanczos3)
                     .into_rgb8();
                 normal_image.save_with_format(&temp_file_path, ImageFormat::Png)?;
-                rename(&temp_file_path, &normal_image_path)?;
+                rename(temp_file_path, &normal_image_path)?;
             }
         }
 
         if roughness_image.is_some() || metalness_image.is_some() || displacement_image.is_some() || ao_image.is_some()
         {
-            let material_pack_image_path = target_path.join("MetallicOcclusionDisplacementRoughness.png");
+            let material_pack_image_path = target_path.join(format!("{}_MODR.png", zip_name));
             if force_pack || !material_pack_image_path.exists() {
                 let mut material_pack_image = RgbaImage::new(pack_target_width, pack_target_height);
 
@@ -290,8 +290,8 @@ fn pack_single_image(
                     }
                 }
 
-                material_pack_image.save_with_format(&temp_file_path, ImageFormat::Png)?;
-                rename(&temp_file_path, &material_pack_image_path)?;
+                material_pack_image.save_with_format(temp_file_path, ImageFormat::Png)?;
+                rename(temp_file_path, &material_pack_image_path)?;
             }
         }
     }

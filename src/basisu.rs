@@ -21,7 +21,7 @@ pub fn compress_basisu(
 ) -> Result<(), ApplicationError> {
     create_dir_all(basisu_cache_path)?;
 
-    let directory_contents = read_dir(&pack_cache_path)?
+    let directory_contents = read_dir(pack_cache_path)?
         .filter_map(|f| f.ok())
         .map(|f| f.path())
         .filter(|f| f.is_file());
@@ -52,14 +52,14 @@ fn compress_single_material(
     force_basisu: bool,
     basisu_cache_path: &Path,
 ) -> Result<(), ApplicationError> {
-    if let Some(material_dir_name) = material_path.file_stem() {
+    if let Some(material_name) = material_path.file_stem().and_then(|p| p.to_str()) {
         let material_json = material_path.join("Material.json");
         if material_json.exists() {
-            println!("BASISU {:?}", material_dir_name);
+            println!("BASISU {:?}", material_name);
 
             let material: serde_json::Value = serde_json::from_str(&read_to_string(&material_json)?)?;
 
-            let target_path = basisu_cache_path.join(material_dir_name);
+            let target_path = basisu_cache_path.join(material_name);
             create_dir_all(&target_path)?;
 
             let target_material_json = target_path.join("Material.json");
@@ -67,9 +67,9 @@ fn compress_single_material(
                 copy(&material_json, target_material_json)?;
             }
 
-            let albedo_source_path = material_path.join("Albedo.png");
+            let albedo_source_path = material_path.join(format!("{}_A.png", material_name));
             if albedo_source_path.exists() {
-                let albedo_target_path = target_path.join("Albedo.basisu");
+                let albedo_target_path = target_path.join(format!("{}_A.basisu", material_name));
                 if force_basisu || !albedo_target_path.exists() {
                     let has_opacity = material.get("opacity").and_then(|f| f.as_bool()).unwrap_or_default();
                     let albedo_image = load(BufReader::new(File::open(&albedo_source_path)?), ImageFormat::Png)?;
@@ -96,14 +96,14 @@ fn compress_single_material(
                         compressor.process()?;
                     }
 
-                    write(&temp_file_path, compressor.basis_file())?;
-                    rename(&temp_file_path, albedo_target_path)?;
+                    write(temp_file_path, compressor.basis_file())?;
+                    rename(temp_file_path, albedo_target_path)?;
                 }
             }
 
-            let normal_source_path = material_path.join("Normal.png");
+            let normal_source_path = material_path.join(format!("{}_N.png", material_name));
             if normal_source_path.exists() {
-                let normal_target_path = target_path.join("Normal.basisu");
+                let normal_target_path = target_path.join(format!("{}_N.basisu", material_name));
                 if force_basisu || !normal_target_path.exists() {
                     let normal_image = load(BufReader::new(File::open(&normal_source_path)?), ImageFormat::Png)?;
                     if normal_image.color() != ColorType::Rgb8 {
@@ -126,14 +126,14 @@ fn compress_single_material(
                         compressor.process()?;
                     }
 
-                    write(&temp_file_path, compressor.basis_file())?;
-                    rename(&temp_file_path, &normal_target_path)?;
+                    write(temp_file_path, compressor.basis_file())?;
+                    rename(temp_file_path, &normal_target_path)?;
                 }
             }
 
-            let material_pack_source_path = material_path.join("MetallicOcclusionDisplacementRoughness.png");
+            let material_pack_source_path = material_path.join(format!("{}_MODR.png", material_name));
             if material_pack_source_path.exists() {
-                let material_pack_target_path = target_path.join("MetallicOcclusionDisplacementRoughness.basisu");
+                let material_pack_target_path = target_path.join(format!("{}_MODR.basisu", material_name));
                 if force_basisu || !material_pack_target_path.exists() {
                     let material_pack_image = load(
                         BufReader::new(File::open(&material_pack_source_path)?),
@@ -158,8 +158,8 @@ fn compress_single_material(
                         compressor.process()?;
                     }
 
-                    write(&temp_file_path, compressor.basis_file())?;
-                    rename(&temp_file_path, &material_pack_target_path)?;
+                    write(temp_file_path, compressor.basis_file())?;
+                    rename(temp_file_path, &material_pack_target_path)?;
                 }
             }
         }

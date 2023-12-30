@@ -25,7 +25,7 @@ pub fn download_ambientcg(
         }
     }
 
-    create_dir_all(&download_cache_path)?;
+    create_dir_all(download_cache_path)?;
     let temp_file_path = download_cache_path.join("mtldownload.tmp");
 
     let metadata_path = download_cache_path.join(".mtld");

@@ -70,9 +70,9 @@ for material_path in Path(MTLD_PACK_CACHE).iterdir():
 
     invert_normal = False
 
-    color_image_path = material_path.joinpath('Albedo.png')
-    material_pack_image_path = material_path.joinpath('MetallicOcclusionDisplacementRoughness.png')
-    normal_image_path = material_path.joinpath('Normal.png')
+    color_image_path = material_path.joinpath(f'{material_name}_A.png')
+    material_pack_image_path = material_path.joinpath(f'{material_name}_MODR.png')
+    normal_image_path = material_path.joinpath(f'{material_name}_N.png')
 
     material_output = material.node_tree.nodes.new('ShaderNodeOutputMaterial')
     material_output.location = [400.0, -100.0]

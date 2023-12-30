@@ -52,9 +52,9 @@ pub fn generate_unity(
 
                         let material_file_path = target_path.join(format!("{}.mat", material_name));
                         if force_generate_unity || !material_file_path.exists() {
-                            let albedo_uuid = Uuid::new_v4().to_string().replace("-", "");
+                            let albedo_uuid = Uuid::new_v4().to_string().replace('-', "");
                             if has_albedo {
-                                let albedo_path = target_path.join("Albedo.png.meta");
+                                let albedo_path = target_path.join(format!("{}_A.png.meta", material_name));
                                 write(
                                     &albedo_path,
                                     texture_template
@@ -66,9 +66,9 @@ pub fn generate_unity(
                                 )?;
                             }
 
-                            let normal_uuid = Uuid::new_v4().to_string().replace("-", "");
+                            let normal_uuid = Uuid::new_v4().to_string().replace('-', "");
                             if has_normal {
-                                let normal_path = target_path.join("Normal.png.meta");
+                                let normal_path = target_path.join(format!("{}_N.png.meta", material_name));
                                 write(
                                     &normal_path,
                                     texture_template
@@ -80,10 +80,9 @@ pub fn generate_unity(
                                 )?;
                             }
 
-                            let material_pack_uuid = Uuid::new_v4().to_string().replace("-", "");
+                            let material_pack_uuid = Uuid::new_v4().to_string().replace('-', "");
                             if has_material_pack {
-                                let material_pack_path =
-                                    target_path.join("MetallicOcclusionDisplacementRoughness.png.meta");
+                                let material_pack_path = target_path.join(format!("{}_MODR.png.meta", material_name));
                                 write(
                                     &material_pack_path,
                                     texture_template
